@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>LLCS - Hỗ Trợ Xử Án</title>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{--bg1:#0f172a;--bg2:#1e293b;--panel:#111827;--accent:#38bdf8;--muted:#94a3b8}
+    html,body{height:100%;margin:0;font-family:Arial,system-ui,-apple-system; background:linear-gradient(120deg,var(--bg1),var(--bg2)); color:#fff}
+    .login-container{display:flex;justify-content:center;align-items:center;height:100vh}
+    .login-box{background:var(--panel);border-radius:12px;padding:40px;box-shadow:0 8px 30px rgba(0,0,0,.6);width:100%;max-width:400px}
+    .login-box h1{margin:0 0 32px;text-align:center;color:var(--accent)}
+    .login-box label{display:block;margin-top:16px;color:var(--muted);font-weight:bold}
+    .login-box input{width:100%;padding:12px;margin-top:8px;border-radius:8px;border:1px solid rgba(56,189,248,0.3);background:#1e293b;color:#fff;box-sizing:border-box}
+    .login-box input::placeholder{color:#cbd5e1}
+    .login-box button{width:100%;padding:12px;margin-top:24px;background:var(--accent);color:#000;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:1rem}
+    .login-box button:hover{opacity:0.9}
+    .container{max-width:1200px;margin:32px auto;padding:20px;background:var(--panel);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+    h1{margin:0 0 32px;text-align:center;color:var(--accent)}
+    h2{margin:20px 0 16px;color:var(--accent);background:rgba(56,189,248,0.1);padding:12px;border-left:4px solid var(--accent)}
+    .controls-top{background:var(--panel);padding:20px;border-radius:12px;border:1px solid rgba(56,189,248,0.2);margin-bottom:20px}
+    .controls-top h3{margin:0 0 16px;color:var(--accent)}
+    .button-group{display:flex;gap:8px;flex-wrap:wrap}
+    button{padding:12px 20px;border-radius:8px;border:0;cursor:pointer;font-weight:700;transition:all 0.2s}
+    button.primary{background:var(--accent);color:#000}
+    button.primary:hover{opacity:0.9;transform:translateY(-2px)}
+    button.secondary{background:#64748b;color:#fff}
+    button.secondary:hover{opacity:0.9}
+    button.ghost{background:transparent;border:2px solid rgba(255,255,255,.2);color:#fff}
+    button.ghost:hover{border-color:var(--accent);color:var(--accent)}
+    button.copy-btn{background:#22c55e;color:#000;padding:8px 12px;font-size:0.9rem;margin-left:8px}
+    button.copy-btn:hover{opacity:0.9}
+    .khoang-grid{display:grid;grid-template-columns:1fr;gap:20px;margin-bottom:32px}
+    .khoang-card{background:#0b1220;border-radius:8px;border:1px solid rgba(56,189,248,0.2);padding:16px}
+    .combo-card{background:#1a2332;border-radius:8px;border:1px solid rgba(34,197,94,0.3);padding:16px;margin-bottom:20px}
+    .combo-card h2{margin:0 0 12px;color:#22c55e;border-left-color:#22c55e}
+    .crime-item{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(56,189,248,0.05);border-radius:6px;margin:8px 0;cursor:pointer;transition:all 0.2s}
+    .crime-item:hover{background:rgba(56,189,248,0.15);transform:translateX(4px)}
+    .crime-item.selected{background:rgba(56,189,248,0.25);border:1px solid var(--accent)}
+    .crime-checkbox{width:24px;height:24px;cursor:pointer;accent-color:var(--accent);flex-shrink:0}
+    .crime-info{flex:1}
+    .crime-name{color:#fff;font-weight:500}
+    .crime-minute{color:var(--muted);font-size:0.9rem}
+    .crime-controls{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .qty-btn{background:#38bdf8;color:#000;border:none;width:32px;height:32px;border-radius:4px;cursor:pointer;font-weight:bold;display:flex;align-items:center;justify-content:center}
+    .qty-btn:hover{opacity:0.9}
+    .qty-display{min-width:40px;text-align:center;color:var(--accent);font-weight:bold}
+    .controls-bottom{background:var(--panel);padding:20px;border-radius:12px;border:1px solid rgba(56,189,248,0.2);margin-top:32px}
+    .reductions{background:rgba(56,189,248,0.1);border-radius:8px;padding:16px;margin-bottom:20px}
+    .reductions h4{margin:0 0 12px;color:var(--accent)}
+    .reduction-item{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+    .reduction-item:last-child{border-bottom:none}
+    .reduction-item label{margin:0;display:flex;align-items:center;gap:8px;cursor:pointer;flex:1}
+    .reduction-item input[type="checkbox"]{width:20px;height:20px;cursor:pointer}
+    .reduction-value{color:var(--accent);font-weight:bold;min-width:60px;text-align:right}
+    .selected-list{background:rgba(56,189,248,0.1);border-radius:8px;padding:16px;margin-bottom:20px}
+    .selected-list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .result{background:#0b1020;border-radius:8px;border:2px solid rgba(56,189,248,0.3);padding:24px}
+    .result-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.1);font-size:1.1rem}
+    .result-row:last-child{border-bottom:none}
+    .result-label{color:var(--muted)}
+    .result-value{font-weight:bold;color:var(--accent);font-size:1.3rem}
+    .small{font-size:0.9rem;color:var(--muted)}
+    @media (min-width:1024px){
+      .khoang-grid{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="loginPage" class="login-container">
+    <div class="login-box">
+      <h1>⚖️ LLCS - Hỗ Trợ Xử Án</h1>
+      <label for="username">Tài khoản</label>
+      <input type="text" id="username" placeholder="Nhập tài khoản" autocomplete="off">
+      <label for="password">Mật khẩu</label>
+      <input type="password" id="password" placeholder="Nhập mật khẩu" autocomplete="off">
+      <button onclick="handleLogin()">Đăng Nhập</button>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="appPage" style="display:none;">
+    <div class="container" id="app">
+      <h1>⚖️ LLCS - Hỗ Trợ Xử Án</h1>
+
+      <div class="controls-top">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3 id="welcome" style="margin:0">👤 Thẩm phán: giakha</h3>
+          <button class="ghost" onclick="handleLogout()">Đăng Xuất</button>
+        </div>
+        <div class="button-group">
+          <button class="secondary" onclick="handleExport()">📄 Xuất PDF</button>
+          <button class="ghost" onclick="handleClear()">Xóa tất cả</button>
+        </div>
+      </div>
+
+      <!-- Combo Súng Card -->
+      <div class="combo-card" id="comboCard">
+        <h2>🔫 COMBO SÚNG - 90 phút</h2>
+        <div class="crime-item" onclick="toggleCombo()">
+          <input type="checkbox" class="crime-checkbox" id="comboCheckbox" onchange="event.stopPropagation();">
+          <div class="crime-info">
+            <div class="crime-name">Combo súng (Sử dụng vũ khí, Tàng trữ vũ khí, Sử dụng súng trái phép)</div>
+            <div class="crime-minute">90 phút</div>
+          </div>
+          <div class="crime-controls" onclick="event.stopPropagation();">
+            <button class="qty-btn" onclick="changeComboQty(-1)">−</button>
+            <div class="qty-display" id="comboQty">0</div>
+            <button class="qty-btn" onclick="changeComboQty(1)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="khoang-grid" id="khoangGrid"></div>
+
+      <div class="controls-bottom" id="controlsBottom">
+        <div class="reductions">
+          <h4>📋 Giảm nhẹ án phạt</h4>
+          <div class="reduction-item">
+            <label>
+              <input type="checkbox" id="reduction1" onchange="updateReductions()">
+              <span>Hợp tác</span>
+            </label>
+            <div class="reduction-value">-10p</div>
+          </div>
+          <div class="reduction-item">
+            <label>
+              <input type="checkbox" id="reduction2" onchange="updateReductions()">
+              <span>Điều tra</span>
+            </label>
+            <div class="reduction-value">-10p</div>
+          </div>
+          <div class="reduction-item">
+            <label>
+              <input type="checkbox" id="reduction3" onchange="updateReductions()">
+              <span>Đầu thú</span>
+            </label>
+            <div class="reduction-value">-10p</div>
+          </div>
+          <div class="reduction-item">
+            <label>
+              <input type="checkbox" id="reduction4" onchange="updateReductions()">
+              <span>Có giấy NVSQ</span>
+            </label>
+            <div class="reduction-value">-60p</div>
+          </div>
+        </div>
+        
+        <div class="selected-list" id="selectedList">
+          <div class="selected-list-header">
+            <strong style="color:var(--accent);">📋 Danh sách tội danh:</strong>
+            <button class="copy-btn" onclick="copyToClipboard()">📋 Sao chép</button>
+          </div>
+          <div id="selectedListText" style="margin-top:8px;color:#fff;line-height:1.6;word-wrap:break-word;"></div>
+        </div>
+
+        <div class="result" id="result">
+          <div class="result-row">
+            <span class="result-label">📊 Tổng số tội:</span>
+            <span class="result-value" id="totalCrimes">0</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">⏱ Tổng thời gian:</span>
+            <span class="result-value" id="totalMin">0 phút</span>
+          </div>
+          <div class="result-row" id="reductionRow" style="display:none;">
+            <span class="result-label">📉 Giảm nhẹ:</span>
+            <span class="result-value" id="reductionMin">0 phút</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">💵 Số tiền chuộc:</span>
+            <span class="result-value" id="totalFine">0 đ</span>
+          </div>
+          <div class="result-row" id="cumulativeRow" style="display:none;">
+            <span class="result-label">🔄 Công dồn (KHOẢN 6):</span>
+            <span class="result-value" id="cumulativeMin">0 phút</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const crimeData = {
+      "KHOẢN 1": {
+        baseMin: 20,
+        crimes: [
+          "Sử dụng nắm đấm gây rối trật tự công cộng",
+          "Gây rối trật tự nơi công cộng",
+          "Cản trở người thi hành công vụ",
+          "Hỗ trợ đồng bọn, trợ giúp tội phạm",
+          "Không giao nộp tang vật trong vụ án",
+          "Tàng trữ hoặc sử dụng vật phẩm trái phép nơi công cộng",
+          "Trộm cắp tài sản công dân (Nhập Nha Khiên Đồ)",
+          "Phá hoại tài sản nhà nước"
+        ]
+      },
+      "KHOẢN 2": {
+        baseMin: 30,
+        crimes: [
+          "Nhập cư trái phép",
+          "Tàng trữ chất cấm trái phép",
+          "Vu khống người khác",
+          "Lăng mạ, xúc phạm người khác",
+          "Xúc phạm ban ngành đang làm nhiệm vụ",
+          "Giả dạng, tự xưng người nhà nước",
+          "Sử dụng vũ khí thô sơ nơi công cộng",
+          "Sử dụng súng nơi công cộng",
+          "Sử dụng súng trái phép",
+          "Tàng trữ súng trái phép",
+          "Gây thương tích chưa nghiêm trọng",
+          "Chống đối người thi hành công vụ",
+          "Xâm nhập trụ sở thuộc Ban Ngành Nhà Nước",
+          "Đe dọa người thuộc Ban Ngành Nhà Nước đang làm nhiệm vụ",
+          "Lừa đảo chiếm đoạt tài sản người khác"
+        ]
+      },
+      "KHOẢN 3": {
+        baseMin: 60,
+        crimes: [
+          "Đ1 - Tấn công gây thương tích Nghiêm Trọng",
+          "Đ2 - Tấn công sĩ quan Cảnh Sát",
+          "Đ3 - Tấn công sĩ quan Quân Đội",
+          "Đ4 - Tấn công đặc vụ FIB",
+          "Đ5 - Tấn công nhân viên MW",
+          "Đ6 - Tấn công sĩ quan Học Viện",
+          "Đ7 - Tấn công sĩ quan nhà tù"
+        ]
+      },
+      "KHOẢN 4": {
+        baseMin: 120,
+        crimes: [
+          "Tấn công quản lý ban ngành",
+          "Tấn công nhân viên văn phòng chính phủ",
+          "Tấn công nhân viên truyền thông",
+          "Tấn công nhân viên y tế",
+          "Xâm nhập trái phép khu quân sự",
+          "Nhập cư trái phép nhà tu",
+          "Nhập cư trái phép học viên"
+        ]
+      },
+      "KHOẢN 5": {
+        baseMin: 180,
+        crimes: [
+          "Tấn công Thống Đốc",
+          "Tấn công Thị Trưởng Thành Phố"
+        ]
+      },
+      "KHOẢN 6": {
+        baseMin: 200,
+        crimes: [
+          "Bạo động thành phố",
+          "Tấn công trụ sở"
+        ],
+        isCumulative: true,
+        maxCount: 5
+      }
+    };
+
+    let selectedCrimes = [];
+    let comboQty = 0;
+    const STORAGE_KEY = "llcs_selectedCrimes";
+
+    function init() {
+      loadFromStorage();
+      renderKhoangCards();
+      updateDisplay();
+    }
+
+    function renderKhoangCards() {
+      const khoangGrid = document.getElementById("khoangGrid");
+      khoangGrid.innerHTML = "";
+      
+      Object.entries(crimeData).forEach(([khoang, data]) => {
+        const card = document.createElement("div");
+        card.className = "khoang-card";
+        
+        let html = `<h2>${khoang} - ${data.baseMin} phút${data.isCumulative ? ' (Công dồn tối đa ' + data.maxCount + ' lần)' : ''}</h2>`;
+        
+        data.crimes.forEach((crime, idx) => {
+          const crimeId = `${khoang}_${idx}`;
+          const selected = selectedCrimes.find(c => c.id === crimeId);
+          const isSelected = !!selected;
+          const qty = selected ? selected.qty : 0;
+          const maxQty = data.maxCount || 999;
+          
+          html += `
+            <div class="crime-item ${isSelected ? 'selected' : ''}" onclick="toggleCrime('${crimeId}', '${khoang}', '${crime}', ${data.baseMin}, ${data.isCumulative ? 'true' : 'false'}, ${maxQty})">
+              <input type="checkbox" class="crime-checkbox" ${isSelected ? 'checked' : ''} onchange="event.stopPropagation();">
+              <div class="crime-info">
+                <div class="crime-name">${crime}</div>
+                <div class="crime-minute">${data.baseMin} phút</div>
+              </div>
+              <div class="crime-controls" onclick="event.stopPropagation();">
+                <button class="qty-btn" onclick="changeQty('${crimeId}', -1, ${maxQty})">−</button>
+                <div class="qty-display">${qty}</div>
+                <button class="qty-btn" onclick="changeQty('${crimeId}', 1, ${maxQty})">+</button>
+              </div>
+            </div>
+          `;
+        });
+        
+        card.innerHTML = html;
+        khoangGrid.appendChild(card);
+      });
+    }
+
+    function toggleCombo() {
+      comboQty = comboQty > 0 ? 0 : 1;
+      document.getElementById("comboCheckbox").checked = comboQty > 0;
+      document.getElementById("comboQty").textContent = comboQty;
+      saveToStorage();
+      updateDisplay();
+    }
+
+    function changeComboQty(delta) {
+      comboQty = Math.max(0, comboQty + delta);
+      document.getElementById("comboQty").textContent = comboQty;
+      document.getElementById("comboCheckbox").checked = comboQty > 0;
+      saveToStorage();
+      updateDisplay();
+    }
+
+    function toggleCrime(crimeId, khoang, crimeName, min, isCumulative, maxQty) {
+      const existing = selectedCrimes.findIndex(c => c.id === crimeId);
+      
+      if (existing >= 0) {
+        selectedCrimes.splice(existing, 1);
+      } else {
+        selectedCrimes.push({
+          id: crimeId,
+          khoang: khoang,
+          name: crimeName,
+          min: min,
+          qty: 1,
+          isCumulative: isCumulative,
+          maxQty: maxQty
+        });
+      }
+      
+      saveToStorage();
+      renderKhoangCards();
+      updateDisplay();
+    }
+
+    function changeQty(crimeId, delta, maxQty) {
+      const crime = selectedCrimes.find(c => c.id === crimeId);
+      if (crime) {
+        crime.qty = Math.max(1, Math.min(maxQty, crime.qty + delta));
+        saveToStorage();
+        renderKhoangCards();
+        updateDisplay();
+      }
+    }
+
+    function updateReductions() {
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      calculateAndShow();
+      updateSelectedList();
+    }
+
+    function updateSelectedList() {
+      const count = selectedCrimes.reduce((sum, c) => sum + c.qty, 0) + comboQty;
+      const selectedListText = document.getElementById("selectedListText");
+      
+      let listItems = [];
+      
+      if (comboQty > 0) {
+        const displayItems = [
+          "Sử dụng vũ khí thô sơ nơi công cộng",
+          "Sử dụng súng trái phép",
+          "Sử dụng súng nơi công cộng"
+        ];
+        for (let i = 0; i < comboQty; i++) {
+          listItems = listItems.concat(displayItems);
+        }
+      }
+
+      selectedCrimes.forEach(c => {
+        for (let i = 0; i < c.qty; i++) {
+          listItems.push(c.name);
+        }
+      });
+
+      let listText = listItems.join(", ");
+
+      const reductions = [];
+      if (document.getElementById("reduction1").checked) reductions.push("-10 phút hợp tác");
+      if (document.getElementById("reduction2").checked) reductions.push("-10 phút điều tra");
+      if (document.getElementById("reduction3").checked) reductions.push("-10 phút đầu thú");
+
+      if (reductions.length > 0) {
+        listText += " (" + reductions.join(", ") + ")";
+      }
+
+      selectedListText.innerText = listText;
+    }
+
+    function getReductionAmount() {
+      let reduction = 0;
+      if (document.getElementById("reduction1").checked) reduction += 10;
+      if (document.getElementById("reduction2").checked) reduction += 10;
+      if (document.getElementById("reduction3").checked) reduction += 10;
+      if (document.getElementById("reduction4").checked) reduction += 60;
+      return reduction;
+    }
+
+    function calculateAndShow() {
+      const count = selectedCrimes.reduce((sum, c) => sum + c.qty, 0) + comboQty;
+
+      let totalMin = 0;
+      let cumulativeBase = 0;
+
+      totalMin += comboQty * 90;
+
+      selectedCrimes.forEach(crime => {
+        const calculated = crime.min * crime.qty;
+        if (crime.isCumulative) {
+          cumulativeBase += calculated;
+        } else {
+          totalMin += calculated;
+        }
+      });
+
+      totalMin += cumulativeBase;
+      const reduction = getReductionAmount();
+      const finalMin = Math.max(0, Math.round(totalMin - reduction));
+      const fineAmount = finalMin * 1000;
+      const totalCrimesCount = selectedCrimes.reduce((sum, c) => sum + c.qty, 0) + comboQty;
+
+      document.getElementById("totalCrimes").textContent = totalCrimesCount;
+      document.getElementById("totalMin").textContent = `${Math.round(totalMin)} phút`;
+      
+      const reductionRow = document.getElementById("reductionRow");
+      if (reduction > 0) {
+        reductionRow.style.display = "flex";
+        document.getElementById("reductionMin").textContent = `-${reduction} phút`;
+      } else {
+        reductionRow.style.display = "none";
+      }
+      
+      document.getElementById("totalFine").textContent = fineAmount.toLocaleString('vi-VN') + " đ";
+      
+      const cumulativeRow = document.getElementById("cumulativeRow");
+      if (cumulativeBase > 0) {
+        cumulativeRow.style.display = "flex";
+        document.getElementById("cumulativeMin").textContent = Math.round(cumulativeBase) + " phút";
+      } else {
+        cumulativeRow.style.display = "none";
+      }
+    }
+
+    function copyToClipboard() {
+      const text = document.getElementById("selectedListText").innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Đã sao chép!");
+      }).catch(() => {
+        alert("Sao chép thất bại!");
+      });
+    }
+
+    function handleExport() {
+      const count = selectedCrimes.reduce((sum, c) => sum + c.qty, 0) + comboQty;
+      if (count === 0) {
+        alert("Vui lòng chọn ít nhất một tội danh!");
+        return;
+      }
+
+      let totalMin = 0;
+      let cumulativeBase = 0;
+
+      totalMin += comboQty * 90;
+
+      selectedCrimes.forEach(crime => {
+        const calculated = crime.min * crime.qty;
+        if (crime.isCumulative) {
+          cumulativeBase += calculated;
+        } else {
+          totalMin += calculated;
+        }
+      });
+
+      totalMin += cumulativeBase;
+      const reduction = getReductionAmount();
+      const finalMin = Math.max(0, Math.round(totalMin - reduction));
+      const fineAmount = finalMin * 1000;
+      const totalCrimesCount = selectedCrimes.reduce((sum, c) => sum + c.qty, 0) + comboQty;
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.text("BIÊN BẢN XỬ ÁN RP", 14, 18);
+      
+      doc.setFontSize(11);
+      doc.text("Người xử án: giakha", 14, 28);
+      doc.text("Ngày: " + new Date().toLocaleString(), 14, 36);
+
+      let y = 48;
+      const pageHeight = doc.internal.pageSize.height;
+      let itemCount = 1;
+
+      for (let i = 0; i < comboQty; i++) {
+        if (y > pageHeight - 40) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.setFontSize(10);
+        doc.text(`${itemCount}. Combo súng`, 14, y);
+        doc.setFontSize(9);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`90p`, 14, y + 6);
+        doc.setTextColor(255, 255, 255);
+        y += 14;
+        itemCount++;
+      }
+
+      selectedCrimes.forEach(c => {
+        for (let i = 0; i < c.qty; i++) {
+          if (y > pageHeight - 40) {
+            doc.addPage();
+            y = 20;
+          }
+          doc.setFontSize(10);
+          doc.text(`${itemCount}. ${c.name}`, 14, y);
+          doc.setFontSize(9);
+          doc.setTextColor(150, 150, 150);
+          doc.text(`${c.min}p`, 14, y + 6);
+          doc.setTextColor(255, 255, 255);
+          y += 14;
+          itemCount++;
+        }
+      });
+
+      doc.setFontSize(12);
+      doc.setFont(undefined, "bold");
+      y += 4;
+      if (y > pageHeight - 50) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      doc.text(`TỔNG SỐ TỘI: ${totalCrimesCount}`, 14, y);
+      y += 10;
+      doc.text(`TỔNG THỜI GIAN: ${Math.round(totalMin)} phút`, 14, y);
+      
+      if (reduction > 0) {
+        y += 10;
+        doc.text(`GIẢM NHẸ: -${reduction} phút`, 14, y);
+      }
+      
+      y += 10;
+      doc.text(`ANH CUỐI CÙNG: ${finalMin} phút`, 14, y);
+      y += 10;
+      doc.text(`TIỀN CHUỘC: ${fineAmount.toLocaleString('vi-VN')} đ`, 14, y);
+      
+      if (cumulativeBase > 0) {
+        y += 10;
+        doc.text(`CÔNG DỒN (KHOẢN 6): ${Math.round(cumulativeBase)} phút`, 14, y);
+      }
+
+      doc.save("bien-ban-xu-an.pdf");
+    }
+
+    function handleClear() {
+      if (confirm("Xóa tất cả tội danh đã chọn?")) {
+        selectedCrimes = [];
+        comboQty = 0;
+        document.getElementById("comboCheckbox").checked = false;
+        document.getElementById("comboQty").textContent = "0";
+        
+        // Reset checkboxes giảm nhẹ
+        document.getElementById("reduction1").checked = false;
+        document.getElementById("reduction2").checked = false;
+        document.getElementById("reduction3").checked = false;
+        document.getElementById("reduction4").checked = false;
+        
+        saveToStorage();
+        renderKhoangCards();
+        updateDisplay();
+      }
+    }
+
+    function handleLogin() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (username === "giakha" && password === "12345678") {
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("appPage").style.display = "block";
+        localStorage.setItem("llcs_logged", "true");
+        init();
+      } else {
+        alert("Tài khoản hoặc mật khẩu không chính xác!");
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem("llcs_logged");
+      document.getElementById("loginPage").style.display = "flex";
+      document.getElementById("appPage").style.display = "none";
+      document.getElementById("username").value = "";
+      document.getElementById("password").value = "";
+    }
+
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({crimes: selectedCrimes, combo: comboQty}));
+    }
+
+    function loadFromStorage() {
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"crimes":[],"combo":0}');
+      selectedCrimes = data.crimes || [];
+      comboQty = data.combo || 0;
+      document.getElementById("comboQty").textContent = comboQty;
+      document.getElementById("comboCheckbox").checked = comboQty > 0;
+    }
+
+    function checkLogin() {
+      if (localStorage.getItem("llcs_logged") === "true") {
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("appPage").style.display = "block";
+        init();
+      }
+    }
+
+    window.toggleCombo = toggleCombo;
+    window.changeComboQty = changeComboQty;
+    window.toggleCrime = toggleCrime;
+    window.changeQty = changeQty;
+    window.updateReductions = updateReductions;
+    window.copyToClipboard = copyToClipboard;
+    window.handleExport = handleExport;
+    window.handleClear = handleClear;
+    window.handleLogin = handleLogin;
+    window.handleLogout = handleLogout;
+
+    document.getElementById("password").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") handleLogin();
+    });
+
+    checkLogin();
+  </script>
+</body>
+</html>
